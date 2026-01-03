@@ -1,0 +1,56 @@
+@if (gameState$ | async; as state) {
+<div class="chess-board-container">
+    <div class="board-wrapper">
+        <!-- Coordonnées verticales gauche -->
+        <div class="coordinates vertical left">
+            @for (rank of ranks; track $index) {
+            <div class="coordinate">{{ rank }}</div>
+            }
+        </div>
+
+        <!-- Plateau de jeu -->
+        <div class="chess-board">
+            @for (row of [0,1,2,3,4,5,6,7]; track $index; let rowIndex = $index) {
+            <div class="board-row">
+                @for(col of [0,1,2,3,4,5,6,7]; track $index; let colIndex = $index){
+                <div class="square" [class.light]="isLightSquare(rowIndex, colIndex)"
+                    [class.dark]="!isLightSquare(rowIndex, colIndex)"
+                    [class.selected]="isSelected(rowIndex, colIndex, state)"
+                    [class.valid-move]="isValidMove(rowIndex, colIndex, state)"
+                    [class.last-move]="isLastMove(rowIndex, colIndex, state)"
+                    (click)="onSquareClick(rowIndex, colIndex)">
+                    @if (state.board[rowIndex][colIndex]) {
+                    <div class="piece" [class.white]="state.board[rowIndex][colIndex]?.color === 'white'"
+                        [class.black]="state.board[rowIndex][colIndex]?.color === 'black'"
+                        [class.in-check]="isKingInCheck(rowIndex, colIndex, state)">
+                        <i [class]="getPieceIcon(state.board[rowIndex][colIndex])"></i>
+                    </div>
+                    }
+
+                    @if (isValidMove(rowIndex, colIndex, state)) {
+                    <div class="move-indicator">
+                        <div class="move-dot" [class.capture]="state.board[rowIndex][colIndex]"></div>
+                    </div>
+                    }
+                </div>
+                }
+            </div>
+            }
+
+            <!-- Coordonnées horizontales bas -->
+            <div class="coordinates horizontal">
+                @for (file of files; track $index) {
+                <div class="coordinate">{{ file }}</div>
+                }
+            </div>
+        </div>
+
+        <!-- Coordonnées verticales droite -->
+        <div class="coordinates vertical right">
+            @for (rank of ranks; track $index) {
+            <div class="coordinate">{{ rank }}</div>
+            }
+        </div>
+    </div>
+</div>
+}

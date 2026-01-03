@@ -1,0 +1,31 @@
+<div class="sidebar-container" [class.collapsed]="isCollapsed">
+    <button class="toggle-btn" (click)="toggleCollapse()">
+        <i class="fa-solid" [class.fa-bars]="isCollapsed" [class.fa-xmark]="!isCollapsed"></i>
+    </button>
+
+    <div class="sidebar-content">
+        <h2 class="sidebar-title">Chess</h2>
+
+        <div class="menu-items">
+            <button class="menu-item" (click)="newGame.emit()" [disabled]="!gameState?.moveHistory?.length">
+                <i class="fa-solid fa-plus"></i>
+                <span>New Game</span>
+            </button>
+
+            <button class="menu-item" (click)="undo.emit()"
+                [disabled]="!gameState?.moveHistory?.length || gameState?.status !== 'in_progress'">
+                <i class="fa-solid fa-rotate-left"></i>
+                <span>Undo</span>
+            </button>
+
+            <div class="divider"></div>
+
+        </div>
+
+        <div class="footer-info">
+            @if (gameState) {
+            <p>Status: {{ gameState.status }}</p>
+            }
+        </div>
+    </div>
+</div>

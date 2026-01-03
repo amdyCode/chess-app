@@ -1,0 +1,36 @@
+.timer {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-family: 'Courier New', monospace;
+    font-size: 1.2rem;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #ccc;
+    transition: all 0.3s ease;
+
+    &.active {
+        background: rgba(255, 255, 255, 0.2);
+        color: #fff;
+        box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+    }
+
+    &.low-time {
+        color: #ff6b6b;
+        animation: pulse 1s infinite;
+    }
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.5;
+    }
+}

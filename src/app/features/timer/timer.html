@@ -1,0 +1,4 @@
+<div class="timer" [class.active]="active" [class.low-time]="isLowTime()">
+    <i class="fa-solid fa-stopwatch"></i>
+    <span>{{ formatTime(timeRemaining) }}</span>
+</div>

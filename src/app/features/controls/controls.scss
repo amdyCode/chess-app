@@ -1,0 +1,165 @@
+@use '../../core/styles/variables' as vars;
+
+.controls-container {
+    background: vars.$bg-panel;
+    backdrop-filter: blur(12px);
+    border-radius: 50px;
+    padding: 0.8rem 2.5rem;
+    color: vars.$text-primary;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.4);
+    border: 1px solid vars.$glass-border;
+    display: flex;
+    align-items: center;
+    gap: 2.5rem;
+    position: relative;
+    overflow: hidden;
+
+    &::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05), transparent);
+        transform: skewX(-20deg) translateX(-150%);
+        animation: shine 8s infinite;
+        pointer-events: none;
+    }
+}
+
+@keyframes shine {
+    0% {
+        transform: skewX(-20deg) translateX(-150%);
+    }
+
+    20% {
+        transform: skewX(-20deg) translateX(150%);
+    }
+
+    100% {
+        transform: skewX(-20deg) translateX(150%);
+    }
+}
+
+.game-header {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.5rem 1.2rem;
+    border-radius: 30px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid vars.$glass-border;
+    color: vars.$text-secondary;
+
+    &.check {
+        color: #ff0055;
+        border-color: #ff0055;
+        background: rgba(255, 0, 85, 0.1);
+        animation: pulse 1s infinite;
+    }
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(255, 0, 85, 0.4);
+    }
+
+    70% {
+        box-shadow: 0 0 0 10px rgba(255, 0, 85, 0);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba(255, 0, 85, 0);
+    }
+}
+
+.current-player {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    font-size: 1rem;
+    font-family: vars.$font-heading;
+    letter-spacing: 1px;
+}
+
+.player {
+    font-weight: 700;
+    color: vars.$neon-blue;
+    text-shadow: 0 0 10px rgba(0, 243, 255, 0.4);
+}
+
+.action-buttons-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.btn {
+    padding: 0.6rem 1.5rem;
+    border: none;
+    border-radius: 30px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    font-size: 0.9rem;
+    font-family: vars.$font-heading;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    position: relative;
+    overflow: hidden;
+
+    &:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+        filter: grayscale(1);
+    }
+}
+
+.btn-primary {
+    background: vars.$neon-blue;
+    color: #000;
+    box-shadow: 0 0 15px rgba(0, 243, 255, 0.3);
+
+    &:active {
+        transform: scale(0.95);
+    }
+
+    &:hover {
+        transform: translateY(-3px);
+        background: #fff;
+        box-shadow: 0 0 25px rgba(0, 243, 255, 0.6);
+    }
+}
+
+.btn-secondary {
+    background: rgba(255, 255, 255, 0.05);
+    color: vars.$text-secondary;
+    border: 1px solid vars.$glass-border;
+
+    &:hover {
+        background: rgba(255, 255, 255, 0.1);
+        transform: translateY(-2px);
+        border-color: rgba(255, 255, 255, 0.3);
+        color: #fff;
+    }
+}
+
+.fa-play,
+.fa-rotate-right,
+.fa-rotate-left {
+    font-size: 0.9rem;
+}

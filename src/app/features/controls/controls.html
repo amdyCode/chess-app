@@ -1,0 +1,35 @@
+@if (gameState$ | async; as state) {
+<div class="controls-container">
+    <!-- En-tête avec statut -->
+    <div class="game-header">
+        <div class="status-badge" [class]="state.status">
+            <i class="fa-solid fa-circle-info"></i>
+            {{ getStatusText(state) }}
+        </div>
+
+        @if (state.status === 'in_progress' || state.status === 'check') {
+        <div class="current-player">
+            <span class="label">Turn:</span>
+            <span class="player" [class.white]="state.currentPlayer === 'white'"
+                [class.black]="state.currentPlayer === 'black'">
+                <i [class]="getCurrentPlayerIcon(state.currentPlayer)"></i>
+                {{ state.currentPlayer === 'white' ? 'White' : 'Black' }}
+            </span>
+        </div>
+        }
+    </div>
+
+    <!-- Boutons de contrôle -->
+    <div class="action-buttons-row">
+        <button class="btn btn-primary" (click)="onNewGame()">
+            <i class="fa-solid fa-rotate-right"></i>
+            New Game
+        </button>
+
+        <button class="btn btn-secondary" (click)="onUndo()" [disabled]="state.moveHistory.length === 0">
+            <i class="fa-solid fa-rotate-left"></i>
+            Undo
+        </button>
+    </div>
+</div>
+}

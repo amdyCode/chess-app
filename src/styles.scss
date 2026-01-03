@@ -1,1 +1,18 @@
-/* You can add global styles to this file, and also import other style files */
+@use './app/core/styles/variables' as vars;
+
+:root {
+    --neon-blue: #{vars.$neon-blue};
+    --bg-panel: #{vars.$bg-panel};
+    --text-primary: #{vars.$text-primary};
+    --text-secondary: #{vars.$text-secondary};
+    --glass-border: #{vars.$glass-border};
+    --font-heading: #{vars.$font-heading};
+    --bg-dark: #{vars.$bg-dark};
+}
+
+body {
+    margin: 0;
+    font-family: vars.$font-main;
+    background-color: vars.$bg-dark;
+    color: vars.$text-primary;
+}
