@@ -1,11 +1,11 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { GameState } from '../../core/models/game-state';
 
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   templateUrl: './sidebar.html',
   styleUrl: './sidebar.scss'
 })

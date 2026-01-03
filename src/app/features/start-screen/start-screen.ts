@@ -1,10 +1,10 @@
 import { Component, EventEmitter, Output } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 
 @Component({
   selector: 'app-start-screen',
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   templateUrl: './start-screen.html',
   styleUrl: './start-screen.scss'
 })
