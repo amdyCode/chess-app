@@ -13,4 +13,11 @@ export interface Move {
   promotionPiece?: PieceType;
   timestamp: Date;
   notation: string;
+  prevCastlingRights: {
+    white: { kingSide: boolean, queenSide: boolean },
+    black: { kingSide: boolean, queenSide: boolean }
+  };
+  prevEnPassantTarget: Position | null;
+  prevHalfMoveClock: number;
+  prevFullMoveNumber: number;
 }

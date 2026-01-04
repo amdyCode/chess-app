@@ -108,7 +108,7 @@ export class GameEngine {
     const state = this.gameStateSubject.value;
     if (!state.board[from.row][from.col]) return;
 
-    const { newBoard, move, capturedPiece } = this.moveHandler.applyMove(state.board, from, to);
+    const { newBoard, move, capturedPiece } = this.moveHandler.applyMove(state.board, from, to, state);
     const piece = move.piece;
 
     const newCastlingRights = this.moveHandler.updateCastlingRights(state.castlingRights, piece, from, capturedPiece);
@@ -197,8 +197,29 @@ export class GameEngine {
     const lastMove = newHistory.pop()!;
     const newBoard = state.board.map(row => [...row]);
 
-    newBoard[lastMove.from.row][lastMove.from.col] = { ...lastMove.piece, position: lastMove.from };
-    newBoard[lastMove.to.row][lastMove.to.col] = lastMove.capturedPiece || null;
+    newBoard[lastMove.from.row][lastMove.from.col] = { ...lastMove.piece, position: lastMove.from, hasMoved: lastMove.piece.hasMoved };
+    newBoard[lastMove.to.row][lastMove.to.col] = null;
+
+    if (lastMove.capturedPiece) {
+      if (lastMove.isEnPassant) {
+        newBoard[lastMove.from.row][lastMove.to.col] = { ...lastMove.capturedPiece };
+      } else {
+        newBoard[lastMove.to.row][lastMove.to.col] = { ...lastMove.capturedPiece };
+      }
+    }
+
+    if (lastMove.isCastling) {
+      const isKingSide = lastMove.to.col > lastMove.from.col;
+      const rookFromCol = isKingSide ? 7 : 0;
+      const rookToCol = isKingSide ? 5 : 3;
+      const rookRow = lastMove.from.row;
+
+      const rook = newBoard[rookRow][rookToCol];
+      if (rook) {
+        newBoard[rookRow][rookFromCol] = { ...rook, position: { row: rookRow, col: rookFromCol }, hasMoved: false };
+        newBoard[rookRow][rookToCol] = null;
+      }
+    }
 
     const capturedPieces = this.removeFromCapturedPieces(state.capturedPieces, lastMove.capturedPiece);
     const prevPlayer = state.currentPlayer === Color.WHITE ? Color.BLACK : Color.WHITE;
@@ -211,7 +232,11 @@ export class GameEngine {
       moveHistory: newHistory,
       capturedPieces,
       selectedPosition: null,
-      validMoves: []
+      validMoves: [],
+      castlingRights: lastMove.prevCastlingRights,
+      enPassantTarget: lastMove.prevEnPassantTarget,
+      halfMoveClock: lastMove.prevHalfMoveClock,
+      fullMoveNumber: lastMove.prevFullMoveNumber
     });
   }
 
