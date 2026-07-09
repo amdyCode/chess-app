@@ -49,6 +49,15 @@
   </div>
   }
 
+  <app-modal [isOpen]="isPromotionPending" title="Promouvoir le pion" cancelText="Annuler" (cancel)="cancelPromotion()" [showConfirm]="false">
+    <div class="promotion-choices">
+      <button class="promo-btn" (click)="promotePawn(PieceType.QUEEN)"><i class="fa-solid fa-chess-queen"></i> Reine</button>
+      <button class="promo-btn" (click)="promotePawn(PieceType.ROOK)"><i class="fa-solid fa-chess-rook"></i> Tour</button>
+      <button class="promo-btn" (click)="promotePawn(PieceType.BISHOP)"><i class="fa-solid fa-chess-bishop"></i> Fou</button>
+      <button class="promo-btn" (click)="promotePawn(PieceType.KNIGHT)"><i class="fa-solid fa-chess-knight"></i> Cavalier</button>
+    </div>
+  </app-modal>
+
   <app-modal [isOpen]="showNewGameModal()" title="Demarrer une nouvelle partie ?" confirmText="Start"
     cancelText="Cancel" (confirm)="startNewGame()" (cancel)="cancelNewGame()" (overlayClick)="cancelNewGame()">
     <p>Êtes-vous sûr de vouloir commencer une nouvelle partie ? Votre progression actuelle sera perdue.</p>

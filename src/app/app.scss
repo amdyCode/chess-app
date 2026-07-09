@@ -133,3 +133,33 @@ app-sidebar {
         display: none;
     }
 }
+
+.promotion-choices {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.promo-btn {
+    padding: 10px 20px;
+    font-size: 1.2rem;
+    background-color: #2a5298;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    &:hover {
+        background-color: #1e3c72;
+    }
+
+    i {
+        font-size: 1.5rem;
+    }
+}

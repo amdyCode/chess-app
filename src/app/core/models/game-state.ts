@@ -20,4 +20,6 @@ export interface GameState {
     black: { kingSide: boolean, queenSide: boolean }
   };
   enPassantTarget: Position | null;
+  promotionPending: { from: Position, to: Position } | null;
+  positionHashes: string[];
 }

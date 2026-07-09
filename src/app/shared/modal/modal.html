@@ -8,7 +8,9 @@
         <ng-content></ng-content>
       </div>
       <div class="modal-actions">
-        <button class="btn btn-primary" (click)="onConfirm()">{{ confirmText }}</button>
+        @if (showConfirm) {
+          <button class="btn btn-primary" (click)="onConfirm()">{{ confirmText }}</button>
+        }
         @if (showCancel) {
           <button class="btn btn-secondary" (click)="onCancel()">{{ cancelText }}</button>
         }

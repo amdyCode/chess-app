@@ -32,7 +32,9 @@ export class GameEngine {
         white: { kingSide: true, queenSide: true },
         black: { kingSide: true, queenSide: true }
       },
-      enPassantTarget: null
+      enPassantTarget: null,
+      promotionPending: null,
+      positionHashes: []
     };
   }
 
@@ -53,12 +55,29 @@ export class GameEngine {
     );
 
     if (isValidMove) {
-      this.makeMove(state.selectedPosition!, position);
+      const selectedPiece = state.board[state.selectedPosition!.row][state.selectedPosition!.col];
+      if (selectedPiece && selectedPiece.type === PieceType.PAWN && (position.row === 0 || position.row === 7)) {
+        this.gameStateSubject.next({ ...state, promotionPending: { from: state.selectedPosition!, to: position } });
+      } else {
+        this.makeMove(state.selectedPosition!, position);
+      }
     } else if (piece && piece.color === state.currentPlayer) {
       this.selectPiece(position, piece, state);
     } else {
       this.clearSelection();
     }
+  }
+
+  promotePawn(pieceType: PieceType): void {
+    const state = this.gameStateSubject.value;
+    if (state.promotionPending) {
+      this.makeMove(state.promotionPending.from, state.promotionPending.to, pieceType);
+    }
+  }
+
+  cancelPromotion(): void {
+    const state = this.gameStateSubject.value;
+    this.gameStateSubject.next({ ...state, promotionPending: null, selectedPosition: null, validMoves: [] });
   }
 
   private createPiece(type: PieceType, color: Color, row: number, col: number): Piece {
@@ -104,11 +123,40 @@ export class GameEngine {
     this.gameStateSubject.next({ ...state, selectedPosition: null, validMoves: [] });
   }
 
-  private makeMove(from: Position, to: Position): void {
+  private makeMove(from: Position, to: Position, promotionPieceType?: PieceType): void {
     const state = this.gameStateSubject.value;
     if (!state.board[from.row][from.col]) return;
 
-    const { newBoard, move, capturedPiece } = this.moveHandler.applyMove(state.board, from, to, state);
+    const movingPiece = state.board[from.row][from.col]!;
+    let disambiguator = '';
+    if (movingPiece.type !== PieceType.PAWN && movingPiece.type !== PieceType.KING) {
+      const otherPieces = [];
+      for (let r = 0; r < 8; r++) {
+        for (let c = 0; c < 8; c++) {
+          const p = state.board[r][c];
+          if (p && p.type === movingPiece.type && p.color === movingPiece.color && (r !== from.row || c !== from.col)) {
+            const valid = this.moveValidator.getValidMoves(p, state);
+            if (valid.some(m => m.row === to.row && m.col === to.col)) {
+              otherPieces.push(p);
+            }
+          }
+        }
+      }
+      if (otherPieces.length > 0) {
+        const sameFile = otherPieces.some(p => p.position.col === from.col);
+        const sameRank = otherPieces.some(p => p.position.row === from.row);
+        const files = 'abcdefgh';
+        if (!sameFile) {
+          disambiguator = files[from.col];
+        } else if (!sameRank) {
+          disambiguator = (8 - from.row).toString();
+        } else {
+          disambiguator = files[from.col] + (8 - from.row).toString();
+        }
+      }
+    }
+
+    const { newBoard, move, capturedPiece } = this.moveHandler.applyMove(state.board, from, to, state, promotionPieceType, disambiguator);
     const piece = move.piece;
 
     const newCastlingRights = this.moveHandler.updateCastlingRights(state.castlingRights, piece, from, capturedPiece);
@@ -116,7 +164,19 @@ export class GameEngine {
     const capturedPieces = this.updateCapturedPieces(state.capturedPieces, capturedPiece);
 
     const nextPlayer = state.currentPlayer === Color.WHITE ? Color.BLACK : Color.WHITE;
-    const status = this.calculateGameStatus(newBoard, nextPlayer, newCastlingRights, newEnPassantTarget, state);
+    
+    const boardHash = this.generateBoardHash(newBoard, nextPlayer, newCastlingRights, newEnPassantTarget);
+    const newHashes = [...state.positionHashes, boardHash];
+
+    const status = this.calculateGameStatus(newBoard, nextPlayer, newCastlingRights, newEnPassantTarget, state, newHashes);
+
+    if (status === GameStatus.CHECK) move.notation += '+';
+    if (status === GameStatus.CHECKMATE) move.notation += '#';
+    if (move.isPromotion && move.promotionPiece) {
+       let pSymbol = move.promotionPiece[0].toUpperCase();
+       if (move.promotionPiece === PieceType.KNIGHT) pSymbol = 'N';
+       move.notation += '=' + pSymbol;
+    }
 
     this.gameStateSubject.next({
       ...state,
@@ -130,8 +190,25 @@ export class GameEngine {
       halfMoveClock: (piece.type === PieceType.PAWN || capturedPiece) ? 0 : state.halfMoveClock + 1,
       fullMoveNumber: nextPlayer === Color.WHITE ? state.fullMoveNumber + 1 : state.fullMoveNumber,
       castlingRights: newCastlingRights,
-      enPassantTarget: newEnPassantTarget
+      enPassantTarget: newEnPassantTarget,
+      promotionPending: null,
+      positionHashes: newHashes
     });
+  }
+
+  private generateBoardHash(board: Board, currentPlayer: Color, castlingRights: any, enPassantTarget: Position | null): string {
+    let hash = '';
+    for (let r = 0; r < 8; r++) {
+      for (let c = 0; c < 8; c++) {
+        const p = board[r][c];
+        hash += p ? `${p.color[0]}${p.type[0]}` : '-';
+      }
+    }
+    hash += `|${currentPlayer[0]}`;
+    hash += `|${castlingRights.white.kingSide ? 'K' : '-'}${castlingRights.white.queenSide ? 'Q' : '-'}`;
+    hash += `${castlingRights.black.kingSide ? 'k' : '-'}${castlingRights.black.queenSide ? 'q' : '-'}`;
+    hash += `|${enPassantTarget ? `${enPassantTarget.row},${enPassantTarget.col}` : '-'}`;
+    return hash;
   }
 
   private getEnPassantTarget(piece: Piece, from: Position, to: Position): Position | null {
@@ -149,7 +226,7 @@ export class GameEngine {
     return updated;
   }
 
-  private calculateGameStatus(board: Board, nextPlayer: Color, castlingRights: any, enPassantTarget: Position | null, state: GameState): GameStatus {
+  private calculateGameStatus(board: Board, nextPlayer: Color, castlingRights: any, enPassantTarget: Position | null, state: GameState, positionHashes: string[]): GameStatus {
     const isCheck = this.moveValidator.isKingInCheck(board, nextPlayer);
 
     const tempState: GameState = {
@@ -165,6 +242,15 @@ export class GameEngine {
     if (!hasValidMoves) {
       return isCheck ? GameStatus.CHECKMATE : GameStatus.STALEMATE;
     }
+
+    if (state.halfMoveClock >= 100) return GameStatus.DRAW;
+
+    if (positionHashes.length > 0) {
+      const currentHash = positionHashes[positionHashes.length - 1];
+      const count = positionHashes.filter(h => h === currentHash).length;
+      if (count >= 3) return GameStatus.DRAW;
+    }
+
     return isCheck ? GameStatus.CHECK : GameStatus.IN_PROGRESS;
   }
 
@@ -236,7 +322,9 @@ export class GameEngine {
       castlingRights: lastMove.prevCastlingRights,
       enPassantTarget: lastMove.prevEnPassantTarget,
       halfMoveClock: lastMove.prevHalfMoveClock,
-      fullMoveNumber: lastMove.prevFullMoveNumber
+      fullMoveNumber: lastMove.prevFullMoveNumber,
+      promotionPending: null,
+      positionHashes: state.positionHashes.slice(0, -1)
     });
   }
 

@@ -12,7 +12,7 @@ export class MoveHandler {
         enPassantTarget: Position | null,
         halfMoveClock: number,
         fullMoveNumber: number
-    }): { newBoard: Board, move: Move, capturedPiece: Piece | null } {
+    }, promotionPieceType?: PieceType, disambiguator: string = ''): { newBoard: Board, move: Move, capturedPiece: Piece | null } {
         const newBoard = board.map(row => [...row]);
         const piece = newBoard[from.row][from.col];
 
@@ -45,7 +45,7 @@ export class MoveHandler {
             isEnPassant,
             isCastling,
             timestamp: new Date(),
-            notation: this.generateNotation(piece, from, to, capturedPiece),
+            notation: this.generateNotation(piece, from, to, isCastling, capturedPiece, disambiguator),
             prevCastlingRights: JSON.parse(JSON.stringify(currentState.castlingRights)),
             prevEnPassantTarget: currentState.enPassantTarget ? { ...currentState.enPassantTarget } : null,
             prevHalfMoveClock: currentState.halfMoveClock,
@@ -56,10 +56,10 @@ export class MoveHandler {
         newBoard[to.row][to.col] = { ...piece, position: to, hasMoved: true };
         newBoard[from.row][from.col] = null;
 
-        if (isPawn && (to.row === 0 || to.row === 7)) {
-            newBoard[to.row][to.col] = { ...newBoard[to.row][to.col]!, type: PieceType.QUEEN };
+        if (isPawn && (to.row === 0 || to.row === 7) && promotionPieceType) {
+            newBoard[to.row][to.col] = { ...newBoard[to.row][to.col]!, type: promotionPieceType };
             move.isPromotion = true;
-            move.promotionPiece = PieceType.QUEEN;
+            move.promotionPiece = promotionPieceType;
         }
 
         return { newBoard, move, capturedPiece };
@@ -83,13 +83,23 @@ export class MoveHandler {
         }
     }
 
-    private generateNotation(piece: Piece, from: Position, to: Position, captured?: Piece | null): string {
+    private generateNotation(piece: Piece, from: Position, to: Position, isCastling: boolean, captured?: Piece | null, disambiguator: string = ''): string {
+        if (isCastling) {
+            return to.col > from.col ? 'O-O' : 'O-O-O';
+        }
+
         const files = 'abcdefgh';
-        const pieceSymbol = piece.type === PieceType.PAWN ? '' : piece.type[0].toUpperCase();
-        const captureSymbol = captured ? 'x' : '';
+        let pieceSymbol = piece.type === PieceType.PAWN ? '' : piece.type[0].toUpperCase();
+        if (piece.type === PieceType.KNIGHT) pieceSymbol = 'N';
+
+        let captureSymbol = captured ? 'x' : '';
+        if (piece.type === PieceType.PAWN && captured) {
+            disambiguator = files[from.col];
+        }
+
         const toSquare = `${files[to.col]}${8 - to.row}`;
 
-        return `${pieceSymbol}${captureSymbol}${toSquare}`;
+        return `${pieceSymbol}${disambiguator}${captureSymbol}${toSquare}`;
     }
 
     updateCastlingRights(currentRights: any, piece: Piece, from: Position, capturedPiece: Piece | null): any {

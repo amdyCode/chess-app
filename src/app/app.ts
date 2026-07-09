@@ -8,6 +8,7 @@ import { StartScreen } from './features/start-screen/start-screen';
 import { Timer } from './features/timer/timer';
 import { Modal } from './shared/modal/modal';
 import { GameStatus } from './core/enums/game-status';
+import { PieceType } from './core/enums/piece-type';
 
 @Component({
   selector: 'app-root',
@@ -41,6 +42,19 @@ export class App {
   gameOverMessage = signal('');
   gameStarted = false;
   private isDismissingModal = false;
+  PieceType = PieceType;
+
+  get isPromotionPending() {
+    return !!this.gameState()?.promotionPending;
+  }
+
+  promotePawn(pieceType: string) {
+    this.gameEngine.promotePawn(pieceType as PieceType);
+  }
+
+  cancelPromotion() {
+    this.gameEngine.cancelPromotion();
+  }
 
   @HostListener('document:click')
   onDocumentClick() {

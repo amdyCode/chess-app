@@ -14,6 +14,7 @@ export class Modal {
   @Input() confirmText = 'OK';
   @Input() cancelText = 'Cancel';
   @Input() showCancel = true;
+  @Input() showConfirm = true;
 
   @Output() confirm = new EventEmitter<void>();
   @Output() cancel = new EventEmitter<void>();
